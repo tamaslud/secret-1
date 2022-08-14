@@ -1,0 +1,84 @@
+@font-face {
+  font-family: junglefont;
+  src: url(UrbanJungleDEMO.otf);
+}
+
+* {
+  padding: 0;
+  margin: 0;
+  font-family: junglefont;
+}
+.bground {
+  background-color: rgb(39, 174, 96);
+  height: 100vh;
+  padding-top: 1px;
+  background-image: url(img/hiv\ a\ dzsungel.webp);
+  background-size: 100%;
+}
+
+.name {
+  color: rgb(186, 30, 0);
+  text-align: center;
+  font-size: 47px;
+  margin-top: 10%;
+  font-weight: bold;
+}
+.display {
+  color: rgb(186, 30, 0);
+  font-size: 25px;
+  text-align: center;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+.container {
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 33% 33% 33%;
+  grid-template-rows: 33% 33% 33%;
+  max-width: 300px;
+  background-image: url(img/gamepad.jpg);
+}
+.cell {
+  border: 1px solid white;
+  min-width: 100px;
+  min-height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: url(img/knifecursor.png), auto;
+}
+.playerX {
+  color: rgb(186, 30, 0);
+  font-size: 35px;
+  font-weight: 1000;
+}
+
+.playerO {
+  color: rgb(186, 30, 0);
+  font-size: 35px;
+  font-weight: 1000;
+}
+.controls {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1em;
+}
+#reset {
+  background-color: rgb(186, 30, 0);
+  color: white;
+  font-size: 25px;
+  padding: 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: url(img/cursorstart.png), auto;
+  box-shadow: rgba(14, 30, 37, 0.12) 0px 2px 4px 0px,
+    rgba(14, 30, 37, 0.32) 0px 2px 16px 0px;
+}
+
+.message {
+  color: red;
+  text-align: center;
+  padding: 20px;
+}
