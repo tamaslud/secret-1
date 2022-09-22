@@ -1,0 +1,13 @@
+* {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  display: flex;
+}
+
+form {
+  padding-top: 100px;
+  padding-left: 100px;
+}
