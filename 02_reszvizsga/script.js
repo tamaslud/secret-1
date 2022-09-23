@@ -34,6 +34,8 @@ const selectUsersBySpecificStreetNumber = (users, param) => {
 
 //CRUD példa Firebase-el
 
+import { validator } from "./validation.js";
+
 const url = `https://animals-68cb4-default-rtdb.europe-west1.firebasedatabase.app/animals`;
 const userObject = {};
 
@@ -41,9 +43,15 @@ let editButtons;
 let deleteButtons;
 let saveButtons;
 let cancelButtons;
+let isValid = false;
 const addButton = document.querySelector(".btn__add");
 const commonNameInput = document.querySelector(".common");
 const latinNameInput = document.querySelector(".latin");
+
+const modalWindow = document.querySelector(".modal");
+const container = document.querySelector(".container");
+const modalHeader = document.querySelector(".alert__type");
+const modalContent = document.querySelector(".content");
 
 let animalData = [];
 
@@ -83,7 +91,7 @@ const logDataTable = async () => {
   animalData.forEach((oddAnimal, i) => {
     const tr = document.createElement("tr");
     document.querySelector("tbody").appendChild(tr);
-    const animalTemplate = `<td>${oddAnimal.id}</td><td>${oddAnimal.name_common}</td><td>${oddAnimal.name_latin}</td><td><div class="btnGroup"><button class="btn__edit">Edit</button><button class="btn__del">Del</button><button class="btn__save" style='display: none'>Save</button><button class="btn__cancel" style='display: none'>Cancel</button></div></td>`;
+    const animalTemplate = `<td>${oddAnimal.id}</td><td>${oddAnimal.name_common}</td><td>${oddAnimal.name_latin}</td><td><div class="btnGroup btn-group"><button class="btn btn-success btn__edit"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button><button class=" btn btn-danger btn__del"><i class="fa fa-minus-square-o" aria-hidden="true"></i></button><button class=" btn btn-info btn__save" style='display: none'><i class="fa fa-hdd-o" aria-hidden="true"></i></button><button class=" btn btn-secondary btn__cancel" style='display: none'><i class="fa fa-ban" aria-hidden="true"></i></button></div></td>`;
     tr.insertAdjacentHTML("afterbegin", animalTemplate);
 
     deleteButtons = document.querySelectorAll(".btn__del");
@@ -111,6 +119,7 @@ const addEventListeners = (index) => {
     deleteButtons[index].style.display = "none";
     saveButtons[index].style.display = "inline-block";
     cancelButtons[index].style.display = "inline-block";
+    addButton.disabled = true;
 
     editButtons.forEach((button, i) => {
       button.disabled = true;
@@ -123,9 +132,11 @@ const addEventListeners = (index) => {
 
   cancelButtons[index].addEventListener("click", () => {
     resetbuttons(index);
+    addButton.disabled = false;
   });
 
   deleteButtons[index].addEventListener("click", () => {
+    isValid = true;
     // Kiválasztom az aktív sort
     const activeRow =
       deleteButtons[index].parentElement.parentElement.parentElement;
@@ -137,6 +148,8 @@ const addEventListeners = (index) => {
     });
     // Lokálisan a segéd tömbömből is törlöm a sort
     animalData = animalData.filter((animal) => !(animal.id === index));
+
+    alertMessage("Deleted User", "User was successfully deleted.");
   });
 
   saveButtons[index].addEventListener("click", () => {
@@ -146,26 +159,34 @@ const addEventListeners = (index) => {
     commonNameToEdit = editedCommonName;
     latinNameToEdit = editedlatinName;
 
-    const editedAnimalObject = animalData.find(
-      (animal) => animal.id == activeID
-    );
+    isValid = validator(editedCommonName, editedlatinName, isValid);
 
-    const uniqueKeyToUpdate = editedAnimalObject.uniqueKey;
+    if (isValid) {
+      const editedAnimalObject = animalData.find(
+        (animal) => animal.id == activeID
+      );
 
-    delete editedAnimalObject.uniqueKey;
+      const uniqueKeyToUpdate = editedAnimalObject.uniqueKey;
 
-    editedAnimalObject["name_common"] = editedCommonName;
-    editedAnimalObject["name_latin"] = editedlatinName;
+      delete editedAnimalObject.uniqueKey;
 
-    fetch(`${url}/${uniqueKeyToUpdate}.json`, {
-      method: "PUT",
-      body: JSON.stringify(editedAnimalObject),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+      editedAnimalObject["name_common"] = editedCommonName;
+      editedAnimalObject["name_latin"] = editedlatinName;
 
-    resetbuttons(index);
+      fetch(`${url}/${uniqueKeyToUpdate}.json`, {
+        method: "PUT",
+        body: JSON.stringify(editedAnimalObject),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      resetbuttons(index);
+      addButton.disabled = false;
+      alertMessage("Edit User", "User was successfully updated.");
+    } else {
+      alertMessage("Error", "Input fields could not be validated.");
+    }
   });
 };
 
@@ -175,7 +196,6 @@ addButton.addEventListener("click", (e) => {
   const latinName = latinNameInput.value;
 
   //const uniqueKey = `-MCZ${Math.floor(Math.random() * 10 ** 16)}`;
-
   let maxId = 0;
 
   animalData.forEach((animal) => {
@@ -184,23 +204,31 @@ addButton.addEventListener("click", (e) => {
     }
   });
 
-  const newAnimalObject = {
-    animal_common: commonName,
-    animal_latin: latinName,
-    id: maxId + 1,
-  };
+  isValid = validator(commonName, latinName, isValid);
 
-  // Új animal hozzáadása a lokális animalData tömbhöz
-  animalData.push(newAnimalObject);
+  if (isValid) {
+    const newAnimalObject = {
+      animal_common: commonName,
+      animal_latin: latinName,
+      id: maxId + 1,
+    };
 
-  // Új animal hozzáadása az adatbázishoz
-  fetchData(`${url}.json`, {
-    method: "POST",
-    body: JSON.stringify(newAnimalObject),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+    // Új animal hozzáadása a lokális animalData tömbhöz
+    animalData.push(newAnimalObject);
+
+    // Új animal hozzáadása az adatbázishoz
+    fetchData(`${url}.json`, {
+      method: "POST",
+      body: JSON.stringify(newAnimalObject),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    alertMessage("New User", "New user was successfully created.");
+    window.scrollTo({ top: 50000, behavior: "smooth" });
+  } else {
+    alertMessage("Error", "Input fields could not be validated.");
+  }
 
   // Új animal hozzáadása a DOM-hoz
   const tr = document.createElement("tr");
@@ -228,4 +256,19 @@ const resetbuttons = (index) => {
     button.disabled = false;
     deleteButtons[i].disabled = false;
   });
+};
+
+const alertMessage = (type, message) => {
+  modalWindow.style.display = "flex";
+  modalHeader.innerHTML = type;
+  modalContent.innerHTML = message;
+
+  isValid
+    ? (container.style.border = "2px solid green")
+    : (container.style.border = "2px solid red");
+
+  setTimeout(() => {
+    clearTimeout();
+    modalWindow.style.display = "none";
+  }, 5000);
 };
